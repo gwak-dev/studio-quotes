@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "concise-rope-461202-n8",
+  "private_key_id": "c8b0aca216274a2fcc54cbdb716614412e67d109",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/yRwwTWzlRHL0\nbDq71k64HaQ2nU99cqoUJOe8eORMKoWe2QGoG6UNazNjmPmRBTbLfg4DUMh1/e7x\nzoIXHiqsawmmkE7f5FuPLp0sza38FxetzpJwrgSuVGf8sx1zb8H+Fo/ObAS7y+QS\n+6VLdDhhUUTlUqgrelb6d+IxLTpYbXcd0pERE2pP/sv6Pjtj0UxttaAKV/7PeHKn\nxtYHNOaO6bjhw2mLgo9vOkTb9QDmvELMKoSXWON+ZUmX1AUaDGSwqcPHzZGweAQ9\n7Arhz5izbo7KW68nqfoQeMaifxd3gRzUE15fUHZq9ltsGcly+dH50KRPeEtOCwG7\ndKZcTgdpAgMBAAECggEABZAtfcMz3WZzvFAgELKzsYiMzmXfO+u7E5tKrHhPRbGr\noSaVj6mkSzQv7Jgv5YmiroyQQWKzAl4WZZeXqMqRuf2mbS6kVqLWwjEC6IDbijVQ\nnCLNXhtH7kH5iuZkw3m+8AJPM3wwGr3OEwo6A4eVzKY2k8u1EeY9wxrFQvyztWd1\nuu3Pj/eLBHmg6GMlug4gpMb00QcVzxqZmlb0ROp4AZXVmm+JZxGPkRhnkWykmODF\nx1AsLlcjZK0CFTwJmlw0bntf+TSf8V+tSBszDbiYrWczo3mn30TNPcUdZfQQC4Sv\nGf2stAwfHkNh/KKHOG+SwQBwOD/4M5TDPHTm8Dn6BwKBgQDm4gEp0mRVPtaJh0Hr\nGNakY2yjByYzGSNKoy99l1NukKIMnNEVq0PE1DklMLEYI4BUWQYC32GRcBL3JYxI\nxtbrpa1+Ywumcyi/6xJRvHZYt4Mz/pranPoFXvNlbna4dNaNsc8Io15O5VL+ZOZJ\nRckqruu6YG8dY80Q4h6AHp/cMwKBgQDUpkNGs5gBO1qpUFj7sLxksSuW50XaOvMY\nMh8o7w1L92sw2kSXK5vLc8jAzNmZH0c26KoMHphtWZxlblYbRJ+6DVK80guBtaTa\nhgCNO/0zHc2ajK1D0+ALNbI6u6wsOXUzrL6eiLNfQfhn/FnzgwzHJR44V27sTip/\n0Mglvqzx8wKBgH4IezgYOFrsXXJfmlU6jtjXyVLJMUoNe91fbSoytAGUBFG8PMqG\nXg0RCEzL4rBZmNDyc7yXsgwRUNkG7yg/Gs0x+J4YdSCclm8FZE+oADZ3nrCAWInj\nzPunlFgXT8lrRj+9A1Ykz/NjbcWe0LLI3IJnUBjCUYWKmEOSG7I2hW9PAoGBALMC\n6+ue0D1pO98Alof6tf2F8A3uzyzxJyedOgH5i5YByKitdcRUn6hb5gn36M4wOIEO\nx+e/8c1L/I6enboCwPucr6PopmshAJA88kXy1Cmt0yFhf5Jz0E1ffJRY3I22KOXB\nbA6FQYrVPEo9c3O9RIp4wsHnSKeA/eHvXi34IBrlAoGANpoFehHvBYGva/v8vIO0\nYJYmEE8a1ugCxikVAYxWsVifdQFfeIAqFlfGz/hvE8Uja0FuvsB4SHSilp7Mxdyb\nzG3Y4d+a9MMhw38uXsR/yGHg9ygJOp1nBjGFWumcZn6VY7kPqVpFFZOAsnDc2pCg\n2wpstSLktoKNpgh7rK+Tuzg=\n-----END PRIVATE KEY-----\n",
+  "client_email": "studio-quotes-service@concise-rope-461202-n8.iam.gserviceaccount.com",
+  "client_id": "106506519413583617986",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/studio-quotes-service%40concise-rope-461202-n8.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
