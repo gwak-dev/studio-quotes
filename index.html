@@ -2,31 +2,248 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>스튜디오 장비 견적 계산기</title>
+  <title>Studio Quotes – 스튜디오 장비 견적 계산기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class'
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            heading: ['Inter', 'sans-serif'],
+          },
+        },
+      },
     }
   </script>
   <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 min-h-screen">
-  <h1 class="text-3xl font-semibold mb-8">스튜디오 장비 견적 계산기</h1>
-  <div id="equipment" class="space-y-6"></div>
+<body class="bg-slate-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 min-h-screen font-sans">
 
-  <div id="summary" class="fixed right-0 top-0 w-80 h-full bg-zinc-900 text-zinc-100 p-5 overflow-y-auto hidden lg:block">
-    <h2>선택 요약</h2>
-    <p><strong>최저: </strong><span id="minTotal">0</span>원</p>
-    <p><strong>평균: </strong><span id="avgTotal">0</span>원</p>
-    <p><strong>최고: </strong><span id="maxTotal">0</span>원</p>
-    <p><strong>총 채널 수: </strong><span id="channels">0</span></p>
-    <div class="capabilities" id="caps"></div>
-    <h3>선택된 장비</h3>
-    <ul id="selected-list"></ul>
+  <!-- Navbar -->
+  <header class="fixed inset-x-0 top-0 z-30 bg-white/80 dark:bg-zinc-900/80 backdrop-blur shadow-sm">
+    <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <span class="text-lg font-bold">녹음실견적</span>
+      <div class="flex items-center gap-3">
+        <button id="editModeBtn" class="rounded-md px-3 py-1.5 text-sm bg-zinc-600 hover:bg-zinc-700 text-white">수정 모드</button>
+        <button id="themeToggle" class="rounded-md p-2 bg-white dark:bg-zinc-800 hover:bg-slate-200 hover:dark:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-colors" aria-label="Toggle theme">🌙/☀️</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Builder Section -->
+  <main id="builder" class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-24 pb-32">
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="fixed inset-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm flex items-center justify-center">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+        <p class="mt-4 text-lg font-medium">장비 목록을 불러오는 중...</p>
+      </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="mb-6 bg-white dark:bg-zinc-800 rounded-xl shadow-sm p-4">
+      <div class="flex flex-col gap-4">
+        <!-- Search Input - Compact -->
+        <div class="flex gap-4">
+          <div class="flex-1">
+            <input 
+              id="searchInput" 
+              type="text" 
+              placeholder="장비명 검색..." 
+              class="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+          <button 
+            id="clearFilters" 
+            class="rounded-md bg-zinc-500 hover:bg-zinc-600 text-white px-4 py-2 text-sm transition-colors whitespace-nowrap"
+          >
+            초기화
+          </button>
+        </div>
+        
+        <!-- Category Buttons -->
+        <div>
+          <p class="text-sm font-medium mb-2">카테고리 (중복 선택 가능)</p>
+          <div id="categoryButtons" class="flex flex-wrap gap-2">
+            <!-- Categories will be dynamically generated -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Equipment Grid - Full width -->
+    <section id="equipment" class="grid grid-cols-1 gap-6"></section>
+  </main>
+
+  <!-- Fixed Bottom Summary Bar -->
+  <div id="summaryBar" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-lg border-t border-zinc-200 dark:border-zinc-800 z-40 transition-transform duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-6">
+          <span class="text-sm font-medium">선택된 장비: <span id="selectedCount" class="font-bold text-emerald-600">0</span>개</span>
+          <span class="text-sm font-medium">평균가: <span class="font-bold text-emerald-600">₩<span id="avgTotalBar">0</span></span></span>
+        </div>
+        <button id="toggleSummary" class="rounded-md bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2">
+          <span>상세보기</span>
+          <svg class="w-4 h-4 transition-transform" id="toggleIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
   </div>
 
-  <button id="themeToggle" class="fixed bottom-4 left-4 px-3 py-2 rounded-md bg-zinc-800 text-zinc-100 dark:bg-zinc-200 dark:text-zinc-900 shadow">🌙/☀️</button>
+  <!-- Summary Modal (Hidden by default) -->
+  <div id="summaryModal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div id="summaryBackdrop" class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+    
+    <!-- Modal Content -->
+    <div id="summaryContent" class="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-2xl shadow-2xl transform transition-transform duration-300 translate-y-full max-h-[80vh] overflow-hidden">
+      <div class="p-6">
+        <!-- Handle bar -->
+        <div class="w-12 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-4"></div>
+        
+        <h2 class="text-xl font-bold mb-6">선택 요약</h2>
+        
+        <!-- Selected items list -->
+        <div class="mb-6">
+          <h3 class="font-semibold text-lg mb-4">선택된 장비</h3>
+          <ul id="selected-list" class="space-y-2 text-sm max-h-64 overflow-y-auto"></ul>
+        </div>
+        
+        <!-- Price summary -->
+        <div class="space-y-3 text-base mb-6">
+          <p class="flex justify-between items-center"><span class="font-semibold">최저가</span><span class="font-bold text-lg">₩<span id="minTotal">0</span></span></p>
+          <p class="flex justify-between items-center"><span class="font-semibold">평균가</span><span class="font-bold text-lg text-emerald-600">₩<span id="avgTotal">0</span></span></p>
+          <p class="flex justify-between items-center"><span class="font-semibold">최고가</span><span class="font-bold text-lg">₩<span id="maxTotal">0</span></span></p>
+          <p class="flex justify-between items-center"><span class="font-semibold">총 채널 수</span><span class="font-bold text-lg" id="channels">0</span></p>
+        </div>
+        
+        <div class="my-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-sm" id="caps"></div>
+        
+        <!-- Share button -->
+        <button id="shareBtn" class="w-full rounded-md bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 text-sm font-medium transition-colors">
+          🔗 공유하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manage Products Overlay -->
+  <div id="manageOverlay" class="fixed inset-0 z-40 hidden bg-black/30 backdrop-blur-sm overflow-y-auto">
+    <div class="mx-auto mt-20 mb-10 max-w-5xl bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 relative">
+      <button id="closeManage" class="absolute top-4 right-4 text-2xl leading-none hover:text-emerald-500">×</button>
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-semibold">장비 추가/수정</h2>
+      </div>
+
+      <!-- Add Product Form -->
+      <form id="addProductForm" class="grid gap-4 sm:grid-cols-2 mb-8" autocomplete="off">
+        <div>
+          <label class="block mb-1 text-sm">상품명</label>
+          <input id="prodName" type="text" required class="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm">제조사</label>
+          <input id="prodMaker" type="text" class="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm">카테고리</label>
+          <select id="prodCategory" class="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2">
+            <option value="컴퓨터">컴퓨터</option>
+            <option value="소프트웨어">소프트웨어</option>
+            <option value="인터페이스">인터페이스</option>
+            <option value="마이크">마이크</option>
+            <option value="프리앰프">프리앰프</option>
+            <option value="아웃보드">아웃보드</option>
+            <option value="스튜디오모니터">스튜디오모니터</option>
+            <option value="모니터링">모니터링</option>
+            <option value="악기">악기</option>
+            <option value="가구">가구</option>
+            <option value="액세서리">액세서리</option>
+            <option value="기타" selected>기타</option>
+          </select>
+        </div>
+        <div>
+          <label class="block mb-1 text-sm">최저가 (₩)</label>
+          <input id="prodMin" type="number" min="0" required class="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm">최고가 (₩)</label>
+          <input id="prodMax" type="number" min="0" required class="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm">평균가 (자동)</label>
+          <input id="prodAvg" type="number" readonly class="w-full rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 p-2" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm">입력 채널 수</label>
+          <input id="prodChannels" type="number" min="0" value="0" class="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2" />
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="prodDrum" type="checkbox" class="rounded accent-emerald-600" />
+          <label for="prodDrum" class="text-sm">드럼 세트 포함</label>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block mb-1 text-sm">이미지 (URL 또는 파일 업로드)</label>
+          <div class="space-y-2">
+            <input id="prodImgUrl" type="url" placeholder="https://example.com/image.jpg" class="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2 text-sm" />
+            <div class="text-center text-xs text-zinc-500">또는</div>
+            <input id="prodImg" type="file" accept="image/*" class="w-full text-sm" />
+          </div>
+          <img id="imgPreview" class="mt-2 w-24 h-24 object-cover rounded-md hidden" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block mb-1 text-sm">설명</label>
+          <textarea id="prodDesc" rows="4" class="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2"></textarea>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block mb-1 text-sm">판매 링크 (최대 5개)</label>
+          <div id="linksContainer" class="space-y-1"></div>
+          <button id="addLinkField" type="button" class="mt-1 text-xs text-emerald-600 hover:underline">+ 링크 추가</button>
+        </div>
+        <div class="sm:col-span-2 text-right">
+          <button type="submit" class="rounded-md bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2">저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="fixed inset-0 z-40 hidden bg-black/40 backdrop-blur-sm overflow-y-auto">
+    <div class="mx-auto mt-20 mb-10 max-w-2xl bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-6 relative">
+      <button id="closeDetail" class="absolute top-4 right-4 text-2xl leading-none hover:text-emerald-500" aria-label="Close modal">×</button>
+      <div id="detailContent" class="space-y-4"></div>
+    </div>
+  </div>
+
+  <!-- Password Modal -->
+  <div id="passwordModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm">
+    <div class="mx-auto mt-40 max-w-sm bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-6 relative">
+      <h3 class="text-lg font-semibold mb-4">비밀번호 입력</h3>
+      <input 
+        id="passwordInput" 
+        type="password" 
+        placeholder="비밀번호를 입력하세요" 
+        class="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+      />
+      <div class="flex gap-2">
+        <button id="passwordSubmit" class="flex-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm">확인</button>
+        <button id="passwordCancel" class="flex-1 rounded-md bg-zinc-500 hover:bg-zinc-600 text-white px-4 py-2 text-sm">취소</button>
+      </div>
+      <p id="passwordError" class="text-red-500 text-sm mt-2 hidden">비밀번호가 틀렸습니다.</p>
+    </div>
+  </div>
 
 <script src="script.js" defer></script>
 </body>
