@@ -1,0 +1,12 @@
+# Node
+node_modules/
+.env
+Concise Rope 461202.json
+.DS_Store
+package-lock.json
+# Logs
+npm-debug.log*
+.yarn-debug.log*
+.yarn-error.log*
+# OS
+Thumbs.db 
